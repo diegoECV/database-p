@@ -85,8 +85,8 @@ public final class Main {
     return "{" + field("contract", v.contract()) + "," + field("lastChange", v.change()) + "," + field("checksum", v.checksum()) + "," + field("release", v.release()) + "," + field("gitSha", v.gitSha()) + "," + field("appliedAt", v.appliedAt()) + "}";
   }
   private static String versionJson() throws Exception {
-    var postgres = postgresVersion(); var mongo = mongoVersion();
-    return "{\"runningImage\":{" + field("requestedTag", env("IMAGE_REFERENCE")) + "," + field("immutableTag", env("RELEASE_VERSION")) + "," + field("fullGitSha", env("GIT_SHA")) + "," + field("shortGitSha", shortSha(env("GIT_SHA"))) + "}," + field("expectedContract", env("EXPECTED_SCHEMA_VERSION")) + "," + field("aligned", aligned(postgres, mongo)) + ",\"engines\":{\"postgresql\":" + versionInfoJson(postgres) + ",\"mongodb\":" + versionInfoJson(mongo) + "}}";
+    var sqlserver = sqlserverVersion(); var mongo = mongoVersion();
+    return "{\"runningImage\":{" + field("requestedTag", env("IMAGE_REFERENCE")) + "," + field("immutableTag", env("RELEASE_VERSION")) + "," + field("fullGitSha", env("GIT_SHA")) + "," + field("shortGitSha", shortSha(env("GIT_SHA"))) + "}," + field("expectedContract", env("EXPECTED_SCHEMA_VERSION")) + "," + field("aligned", aligned(sqlserver, mongo)) + ",\"engines\":{\"sqlserver\":" + versionInfoJson(sqlserver) + ",\"mongodb\":" + versionInfoJson(mongo) + "}}";
   }
   private static String sqlserverContractJson() throws Exception {
     var columns = new ArrayList<String>(); long rows;
