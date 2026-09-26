@@ -1,0 +1,20 @@
+# Entornos Locales
+.env
+
+# MacOS
+.DS_Store
+
+# Directorios de compilacion de Java (para el checker)
+check/target/
+check/.classpath
+check/.project
+check/.settings/
+
+# Archivos de la base de datos
+db/sqlserver/data/
+db/mongodb/data/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
