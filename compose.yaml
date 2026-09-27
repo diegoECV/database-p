@@ -3,7 +3,6 @@ name: polyglot-persistence-lab-block-1
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: sqlserver-db
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-Password123!}"
@@ -27,7 +26,6 @@ services:
 
   mongodb:
     image: mongo:7.0
-    container_name: mongodb-db
     environment:
       MONGO_INITDB_ROOT_USERNAME: "${MONGO_ADMIN_USER:-admin}"
       MONGO_INITDB_ROOT_PASSWORD: "${MONGO_ADMIN_PASSWORD:-admin123}"
