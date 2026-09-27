@@ -43,7 +43,7 @@ docker compose --project-name "$PROJECT_NAME" -f compose.yaml -f compose.build.y
 paso 3 "Levantar todos los servicios y esperar a que estén listos."
 comando "docker compose up -d --wait"
 docker compose --project-name "$PROJECT_NAME" --env-file .env \
-  -f compose.yaml -f compose.build.yaml \
+  -f compose.yaml \
   up -d --wait
 
 paso 4 "Verificar el estado mediante el checker de persistencia."
