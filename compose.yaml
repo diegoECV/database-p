@@ -20,8 +20,7 @@ services:
         sleep 15
         /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -No -Q "IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'Visons') BEGIN CREATE DATABASE Visons; END;"
         cd /lab
-        chmod +x run.sh
-        ./run.sh
+        bash run.sh
         wait
 
   mongodb:
@@ -41,10 +40,9 @@ services:
         docker-entrypoint.sh mongod &
         sleep 10
         cd /lab
-        chmod +x run.sh
         export MONGO_ADMIN_USER="$${MONGO_INITDB_ROOT_USERNAME}"
         export MONGO_ADMIN_PASSWORD="$${MONGO_INITDB_ROOT_PASSWORD}"
-        ./run.sh
+        bash run.sh
         wait
 
   checker:

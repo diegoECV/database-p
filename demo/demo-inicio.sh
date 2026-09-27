@@ -49,7 +49,7 @@ docker compose --project-name "$PROJECT_NAME" --env-file .env \
 paso 4 "Verificar el estado mediante el checker de persistencia."
 comando "curl http://127.0.0.1:$HTTP_PORT/diagnostics"
 sleep 5 # Dar tiempo a que el servidor Java inicialice y los scripts terminen
-curl --fail --silent --show-error --retry 5 --retry-connrefused --retry-delay 2 "http://127.0.0.1:$HTTP_PORT/diagnostics"
+curl --fail --silent --show-error --retry 15 --retry-connrefused --retry-delay 5 "http://127.0.0.1:$HTTP_PORT/diagnostics"
 printf '\n'
 ok "Inicialización completa. SQL Server y MongoDB con esquemas y datos semilla aplicados."
 printf '    Para probar la web (Swagger): http://127.0.0.1:%s/swagger-ui\n' "$HTTP_PORT"
