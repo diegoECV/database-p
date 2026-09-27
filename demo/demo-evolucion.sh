@@ -8,6 +8,7 @@ LAB_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$LAB_DIR"
 
 PROJECT_NAME="visons-demo-inicio"
+if [[ -f .env ]]; then source .env; fi
 export HTTP_PORT="${HTTP_PORT:-8080}"
 
 paso() { printf '\n\033[1;36m[%s]\033[0m %s\n' "$1" "$2"; }
