@@ -148,6 +148,6 @@ public final class Main {
       <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Polyglot Persistence Lab</title><link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"></head><body><div id="swagger-ui"></div><script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script><script>SwaggerUIBundle({url:'/openapi.json',dom_id:'#swagger-ui',deepLinking:true,displayRequestDuration:true,tryItOutEnabled:true});</script></body></html>
       """;
   public static void main(String[] args) throws Exception {
-    var server = HttpServer.create(new InetSocketAddress(Integer.parseInt(optionalEnv("PORT", "9090"))), 0); server.createContext("/", Main::route); server.setExecutor(Executors.newVirtualThreadPerTaskExecutor()); server.start(); System.out.println("Checker: /health /connections /version /contract /samples /diagnostics /swagger-ui");
+    var server = HttpServer.create(new InetSocketAddress(Integer.parseInt(optionalEnv("PORT", "8080"))), 0); server.createContext("/", Main::route); server.setExecutor(Executors.newVirtualThreadPerTaskExecutor()); server.start(); System.out.println("Checker: /health /connections /version /contract /samples /diagnostics /swagger-ui");
   }
 }

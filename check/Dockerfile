@@ -1,11 +1,11 @@
 # Compilación y ejecución separadas; no requiere Java/Maven en el anfitrión.
-FROM maven:3.9.16-eclipse-temurin-21-noble AS build
+FROM maven:3.9.16-eclipse-temurin-25-noble AS build
 WORKDIR /src
 COPY pom.xml .
 COPY src ./src
 RUN mvn -B -DskipTests package
 
-FROM eclipse-temurin:21-jre-noble
+FROM eclipse-temurin:25-jre-noble
 ARG RELEASE_VERSION=development
 ARG GIT_SHA=unknown
 ENV RELEASE_VERSION=$RELEASE_VERSION GIT_SHA=$GIT_SHA
