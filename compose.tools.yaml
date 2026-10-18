@@ -1,0 +1,10 @@
+# Sobrescritura para exponer los puertos de las bases de datos al anfitrion.
+# Util para conectarse con herramientas externas como Azure Data Studio o MongoDB Compass.
+# Uso: docker compose -f compose.yaml -f compose.tools.yaml up -d
+services:
+  sqlserver:
+    ports:
+      - "127.0.0.1:${SQL_HOST_PORT:-1433}:1433"
+  mongodb:
+    ports:
+      - "127.0.0.1:${MONGO_HOST_PORT:-27017}:27017"

@@ -1,0 +1,8 @@
+# Changelog maestro de SQL Server (VISONS S.A.C.)
+# Aplica en orden alfabetico todos los archivos de la carpeta changes/
+# (001-..., 002-..., 003-...). Para agregar un cambio nuevo basta con crear
+# un archivo con el siguiente numero en changes/.
+databaseChangeLog:
+  - includeAll:
+      path: changes/
+      relativeToChangelogFile: true

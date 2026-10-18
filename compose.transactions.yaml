@@ -1,0 +1,127 @@
+# =====================================================================
+# compose.transactions.yaml - MongoDB con Replica Set para Transacciones ACID
+# VISONS S.A.C. - Demostración de transacciones multi-documento
+#
+# El Replica Set es OBLIGATORIO para que startTransaction() funcione.
+# Un MongoDB standalone rechaza transacciones con el error:
+#   "Transaction numbers are only allowed on a replica set member or mongos"
+#
+# Levanta un Replica Set de un solo nodo (rs0) válido para desarrollo/demo.
+#
+# Uso:
+#   docker compose -f compose.transactions.yaml up --build -d
+#   # Luego ejecutar los scripts:
+#   docker exec -it visons-tx-mongo mongosh \
+#     "mongodb://admin:adminpassword@localhost:27017/Visons?authSource=admin&replicaSet=rs0" \
+#     /scripts/00_setup_datos.js
+# =====================================================================
+name: visons-transactions
+
+services:
+
+  # MongoDB en modo Replica Set de un solo nodo (valido para demos locales)
+  mongodb-rs:
+    image: mongo:8.0.32-noble
+    container_name: visons-tx-mongo
+    hostname: mongodb-rs
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ADMIN_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ADMIN_PASSWORD:-adminpassword}
+      GLIBC_TUNABLES: glibc.pthread.rseq=1
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "127.0.0.1:27018:27017"
+    volumes:
+      - tx-mongo-data:/data/db
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - --eval
+        - |
+          try {
+            const status = rs.status();
+            if (status.ok !== 1) quit(1);
+          } catch(e) {
+            quit(1);
+          }
+      interval: 10s
+      timeout: 8s
+      retries: 30
+      start_period: 15s
+
+  # Inicializa el Replica Set (rs.initiate) y espera a que haya un Primary
+  rs-init:
+    image: mongo:8.0.32-noble
+    container_name: visons-tx-rsinit
+    environment:
+      MONGO_ADMIN_USER: ${MONGO_ADMIN_USER:-admin}
+      MONGO_ADMIN_PASSWORD: ${MONGO_ADMIN_PASSWORD:-adminpassword}
+    depends_on:
+      mongodb-rs:
+        condition: service_started
+    restart: "no"
+    entrypoint: >
+      bash -c "
+        echo 'Esperando que mongod este listo...' &&
+        sleep 8 &&
+        mongosh --host mongodb-rs:27017 --quiet --eval '
+          const cfg = { _id: \"rs0\", members: [{ _id: 0, host: \"mongodb-rs:27017\" }] };
+          try {
+            const st = rs.status();
+            if (st.ok === 1) {
+              print(\"Replica Set ya inicializado. Estado: \" + st.myState);
+            }
+          } catch(e) {
+            const res = rs.initiate(cfg);
+            print(\"rs.initiate() resultado: \" + JSON.stringify(res));
+          }
+        ' &&
+        echo 'Esperando eleccion de Primary...' &&
+        sleep 6 &&
+        mongosh --host mongodb-rs:27017 --quiet --eval '
+          const r = rs.status();
+          print(\"Estado del Replica Set: \" + JSON.stringify(r.myState) + \" (1=Primary)\");
+        ' &&
+        echo 'Replica Set listo.'
+      "
+
+  # Ejecuta el setup de datos y los tres escenarios de transaccion en secuencia
+  run-transactions:
+    image: mongo:8.0.32-noble
+    container_name: visons-tx-runner
+    environment:
+      MONGO_ADMIN_USER: ${MONGO_ADMIN_USER:-admin}
+      MONGO_ADMIN_PASSWORD: ${MONGO_ADMIN_PASSWORD:-adminpassword}
+    volumes:
+      - ./transactions:/scripts:ro
+    depends_on:
+      rs-init:
+        condition: service_completed_successfully
+    restart: "no"
+    entrypoint: >
+      bash -c "
+        URI='mongodb://$$MONGO_ADMIN_USER:$$MONGO_ADMIN_PASSWORD@mongodb-rs:27017/Visons?authSource=admin&replicaSet=rs0' &&
+        echo '' &&
+        echo '============================================================' &&
+        echo ' VISONS S.A.C. | Demostracion de Transacciones ACID MongoDB' &&
+        echo '============================================================' &&
+        echo '' &&
+        echo '--- Paso 0: Preparar datos de prueba ---' &&
+        mongosh \"$$URI\" /scripts/00_setup_datos.js &&
+        echo '' &&
+        echo '--- Paso 1: Escenario exitoso (commit) ---' &&
+        mongosh \"$$URI\" /scripts/01_escenario_exitoso.js &&
+        echo '' &&
+        echo '--- Paso 2: Escenario rollback (abort) ---' &&
+        mongosh \"$$URI\" /scripts/02_escenario_rollback.js &&
+        echo '' &&
+        echo '--- Paso 3: Verificacion ACID ---' &&
+        mongosh \"$$URI\" /scripts/03_verificar_acid.js &&
+        echo '' &&
+        echo '[DEMO COMPLETADA]'
+      "
+
+volumes:
+  tx-mongo-data:

@@ -1,0 +1,104 @@
+databaseChangeLog:
+  - changeSet:
+      id: m017-indices-catalogo
+      author: lizeth
+      changes:
+        - createIndex:
+            collectionName: categories
+            keys: '{code: 1}'
+            options: '{unique: true, sparse: true, name: "uq_category_code"}'
+        - createIndex:
+            collectionName: categories
+            keys: '{name: 1}'
+            options: '{name: "idx_category_name"}'
+        - createIndex:
+            collectionName: products
+            keys: '{name: 1}'
+            options: '{unique: true, name: "uq_product_name"}'
+        - createIndex:
+            collectionName: products
+            keys: '{category_id: 1, is_active: 1}'
+            options: '{name: "idx_category_active"}'
+        - createIndex:
+            collectionName: price_lists
+            keys: '{product_id: 1, effective_date: -1}'
+            options: '{name: "idx_price_product_date"}'
+
+  - changeSet:
+      id: m018-indices-identidad
+      author: diego
+      changes:
+        - createIndex:
+            collectionName: users
+            keys: '{email: 1}'
+            options: '{unique: true, name: "uq_user_email"}'
+        - createIndex:
+            collectionName: users
+            keys: '{username: 1}'
+            options: '{unique: true, name: "uq_username"}'
+        - createIndex:
+            collectionName: users
+            keys: '{role: 1}'
+            options: '{name: "idx_user_role"}'
+        - createIndex:
+            collectionName: clients
+            keys: '{document_number: 1}'
+            options: '{unique: true, name: "uq_client_document"}'
+        - createIndex:
+            collectionName: email_verifications
+            keys: '{token: 1}'
+            options: '{unique: true, name: "uq_email_token"}'
+        - createIndex:
+            collectionName: revoked_tokens
+            keys: '{token: 1}'
+            options: '{unique: true, name: "uq_revoked_token"}'
+        - createIndex:
+            collectionName: rate_limits
+            keys: '{ip: 1}'
+            options: '{name: "idx_rate_limit_ip"}'
+
+  - changeSet:
+      id: m019-indices-proveedores-inventario
+      author: camila
+      changes:
+        - createIndex:
+            collectionName: providers
+            keys: '{ruc: 1}'
+            options: '{unique: true, name: "uq_provider_ruc"}'
+        - createIndex:
+            collectionName: inventory_batches
+            keys: '{product_id: 1, expiration_date: 1}'
+            options: '{name: "idx_batch_product_expiry"}'
+        - createIndex:
+            collectionName: inventory_batches
+            keys: '{batchCode: 1}'
+            options: '{unique: true, name: "uq_batch_code"}'
+
+  - changeSet:
+      id: m020-indices-calidad-logistica-tracking
+      author: equipo4
+      changes:
+        - createIndex:
+            collectionName: quality_inspections
+            keys: '{product: 1, status: 1}'
+            options: '{name: "idx_inspection_product_status"}'
+        - createIndex:
+            collectionName: temperature_logs
+            keys: '{shipment_id: 1, recorded_at: -1}'
+            options: '{name: "idx_temp_shipment_date"}'
+        - createIndex:
+            collectionName: traceability_logs
+            keys: '{action: 1, timestamp: -1}'
+            options: '{name: "idx_trace_action_date"}'
+        - createIndex:
+            collectionName: assignment_tracking
+            keys: '{assignment_id: 1}'
+            options: '{name: "idx_assignment_tracking_id"}'
+        - createIndex:
+            collectionName: batch_inspections
+            keys: '{batch_id: 1}'
+            options: '{name: "idx_batch_inspections_id"}'
+        - createIndex:
+            collectionName: order_tracking
+            keys: '{order_id: 1}'
+            options: '{name: "idx_order_tracking_id"}'

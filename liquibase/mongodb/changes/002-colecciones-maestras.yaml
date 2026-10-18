@@ -1,0 +1,130 @@
+databaseChangeLog:
+  - changeSet:
+      id: m004-clients
+      author: diego
+      changes:
+        - createCollection:
+            collectionName: clients
+      rollback:
+        - dropCollection:
+            collectionName: clients
+
+  - changeSet:
+      id: m005-providers
+      author: camila
+      changes:
+        - createCollection:
+            collectionName: providers
+      rollback:
+        - dropCollection:
+            collectionName: providers
+
+  - changeSet:
+      id: m006-inventory-batches
+      author: camila
+      changes:
+        - createCollection:
+            collectionName: inventory_batches
+      rollback:
+        - dropCollection:
+            collectionName: inventory_batches
+
+  - changeSet:
+      id: m007-price-lists
+      author: lizeth
+      changes:
+        - createCollection:
+            collectionName: price_lists
+      rollback:
+        - dropCollection:
+            collectionName: price_lists
+
+  - changeSet:
+      id: m008-quality-inspections
+      author: lizeth
+      changes:
+        - createCollection:
+            collectionName: quality_inspections
+      rollback:
+        - dropCollection:
+            collectionName: quality_inspections
+
+  - changeSet:
+      id: m009-temperature-logs
+      author: equipo4
+      changes:
+        - createCollection:
+            collectionName: temperature_logs
+      rollback:
+        - dropCollection:
+            collectionName: temperature_logs
+
+  - changeSet:
+      id: m010-traceability-logs
+      author: equipo4
+      changes:
+        - createCollection:
+            collectionName: traceability_logs
+      rollback:
+        - dropCollection:
+            collectionName: traceability_logs
+
+  - changeSet:
+      id: m011-email-verifications
+      author: diego
+      changes:
+        - createCollection:
+            collectionName: email_verifications
+      rollback:
+        - dropCollection:
+            collectionName: email_verifications
+
+  - changeSet:
+      id: m012-revoked-tokens
+      author: diego
+      changes:
+        - createCollection:
+            collectionName: revoked_tokens
+      rollback:
+        - dropCollection:
+            collectionName: revoked_tokens
+
+  - changeSet:
+      id: m013-rate-limits
+      author: diego
+      changes:
+        - createCollection:
+            collectionName: rate_limits
+      rollback:
+        - dropCollection:
+            collectionName: rate_limits
+
+  - changeSet:
+      id: m014-assignment-tracking
+      author: lizeth
+      changes:
+        - createCollection:
+            collectionName: assignment_tracking
+      rollback:
+        - dropCollection:
+            collectionName: assignment_tracking
+
+  - changeSet:
+      id: m015-batch-inspections
+      author: camila
+      changes:
+        - createCollection:
+            collectionName: batch_inspections
+      rollback:
+        - dropCollection:
+            collectionName: batch_inspections
+
+  - changeSet:
+      id: m016-order-tracking
+      author: diego
+      changes:
+        - createCollection:
+            collectionName: order_tracking
+      rollback:
+        - dropCollection:
+            collectionName: order_tracking

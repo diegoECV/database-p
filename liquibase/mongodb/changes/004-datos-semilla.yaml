@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: m021-semilla-categorias
+      author: lizeth
+      changes:
+        - insertMany:
+            collectionName: categories
+            documents: >
+              [
+                { "_id": "CAT-01", "code": "C01", "name": "Frutas",      "description": "Productos frutales frescos",      "is_active": true },
+                { "_id": "CAT-02", "code": "C02", "name": "Verduras",    "description": "Productos vegetales frescos",      "is_active": true },
+                { "_id": "CAT-03", "code": "C03", "name": "Exportacion", "description": "Productos para exportacion",       "is_active": true },
+                { "_id": "CAT-04", "code": "C04", "name": "Organicos",   "description": "Productos organicos certificados", "is_active": true },
+                { "_id": "CAT-05", "code": "C05", "name": "Citricos",    "description": "Frutas citricas",                  "is_active": true }
+              ]
+
+  - changeSet:
+      id: m022-semilla-productos
+      author: lizeth
+      changes:
+        - insertMany:
+            collectionName: products
+            documents: >
+              [
+                { "_id": "PROD-001", "category_id": "CAT-01", "name": "Mango", "variety": "Kent",   "caliber": "Grande",  "unit_measure": "KG", "box_weight_kg": 10.5, "is_active": true },
+                { "_id": "PROD-002", "category_id": "CAT-01", "name": "Palta", "variety": "Hass",   "caliber": "Mediano", "unit_measure": "KG", "box_weight_kg": 8.0,  "is_active": true },
+                { "_id": "PROD-003", "category_id": "CAT-05", "name": "Limon", "variety": "Tahiti", "caliber": "Pequeno", "unit_measure": "KG", "box_weight_kg": 12.0, "is_active": true }
+              ]
+
+  - changeSet:
+      id: m023-semilla-tracking-inspecciones
+      author: equipo4
+      changes:
+        - insertMany:
+            collectionName: assignment_tracking
+            documents: >
+              [
+                { "assignment_id": 1, "assigned_by": "U-001", "action": "CREATED", "timestamp": new Date() },
+                { "assignment_id": 2, "assigned_by": "U-001", "action": "IN_PROGRESS", "timestamp": new Date() }
+              ]
+        - insertMany:
+            collectionName: batch_inspections
+            documents: >
+              [
+                { "batch_id": "BATCH-001", "parameters": { "brix": 12.5, "firmness": "Good" }, "inspected_at": new Date() },
+                { "batch_id": "BATCH-002", "parameters": { "brix": 14.0, "firmness": "Optimal" }, "inspected_at": new Date() }
+              ]
+        - insertMany:
+            collectionName: order_tracking
+            documents: >
+              [
+                { "order_id": 1, "previous_status": "PENDING", "new_status": "PROCESSING", "changed_by": "System", "timestamp": new Date() },
+                { "order_id": 2, "previous_status": "PROCESSING", "new_status": "SHIPPED", "changed_by": "System", "timestamp": new Date() }
+              ]

@@ -1,0 +1,7 @@
+# Changelog maestro de MongoDB (VISONS S.A.C.)
+# Aplica en orden alfabetico todos los archivos de la carpeta changes/.
+# Para agregar un cambio nuevo basta con crear un archivo con el siguiente numero.
+databaseChangeLog:
+  - includeAll:
+      path: changes/
+      relativeToChangelogFile: true

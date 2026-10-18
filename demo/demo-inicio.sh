@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+# =====================================================================
 # demo-inicio.sh - Demostración de inicialización desde cero
-# Levantar todos los servicios en un proyecto aislado y verificar el contrato.
+# VISONS S.A.C. - Levanta el proyecto y verifica contrato de datos
+# =====================================================================
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -11,17 +13,39 @@ PROJECT_NAME="visons-demo-inicio"
 if [[ -f .env ]]; then source .env; fi
 export HTTP_PORT="${HTTP_PORT:-8080}"
 
-paso() { printf '\n\033[1;36m[%s]\033[0m %s\n' "$1" "$2"; }
-porqué() { printf '    Por qué: %s\n' "$1"; }
-ok() { printf '    \033[1;32m✓ %s\033[0m\n' "$1"; }
-error() { printf '    \033[1;31m✗ %s\033[0m\n' "$1" >&2; exit 1; }
+paso()    { printf '\n\033[1;36m[%s]\033[0m %s\n' "$1" "$2"; }
+porqué()  { printf '    Por qué: %s\n' "$1"; }
+ok()      { printf '    \033[1;32m✓ %s\033[0m\n' "$1"; }
+error()   { printf '    \033[1;31m✗ %s\033[0m\n' "$1" >&2; exit 1; }
 comando() { printf '    \033[1;33m$ %s\033[0m\n' "$1"; }
-necesita() { command -v "$1" > /dev/null 2>&1 || error "Falta el comando '$1'."; }
+necesita(){ command -v "$1" > /dev/null 2>&1 || error "Falta el comando '$1'."; }
+
+on_error() {
+  local exit_code="$?"
+  local line_no="$1"
+  local failed_cmd="$2"
+
+  printf '\n\033[1;31m══════════════════════════════════════════════════════════════════════\033[0m\n'
+  printf '\033[1;31m  [ERROR DETECTADO] Falló la inicialización en demo-inicio.sh\033[0m\n'
+  printf '\033[1;31m══════════════════════════════════════════════════════════════════════\033[0m\n'
+  printf '  → \033[1;33mLínea del script:\033[0m %s\n' "$line_no"
+  printf '  → \033[1;33mComando fallido:\033[0m  %s\n' "$failed_cmd"
+  printf '  → \033[1;33mCódigo de salida:\033[0m %s\n\n' "$exit_code"
+  printf '\033[1;36m🔍 Sugerencias:\033[0m\n'
+  printf '  • Si el puerto 1433 o 27017 está en uso: docker ps y docker stop <id>\n'
+  printf '  • Para ver logs detallados: docker compose --project-name %s logs\n' "$PROJECT_NAME"
+  printf '  • Para reiniciar limpio: %s cleanup\n' "$0"
+  printf '\033[1;31m══════════════════════════════════════════════════════════════════════\033[0m\n\n'
+  exit "$exit_code"
+}
+
+trap 'on_error $LINENO "$BASH_COMMAND"' ERR
 
 cleanup() {
   paso "limpieza" "Eliminar el proyecto aislado y sus volúmenes."
   docker compose --project-name "$PROJECT_NAME" down --volumes --remove-orphans 2>/dev/null || true
   ok "Proyecto $PROJECT_NAME eliminado."
+  exit 0
 }
 
 if [[ "${1:-}" == cleanup ]]; then cleanup; exit 0; fi

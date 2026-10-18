@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: m024-indice-barcode-productos
+      author: lizeth
+      changes:
+        - createIndex:
+            collectionName: products
+            keys: '{barcode: 1}'
+            options: '{unique: true, sparse: true, name: "uq_product_barcode"}'

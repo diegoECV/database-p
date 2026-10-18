@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
+# =====================================================================
 # demo-evolucion.sh - Demostración de evolución de esquemas
 # Muestra que levantar el proyecto nuevamente no destruye datos
 # sino que aplica los nuevos scripts de la carpeta changes/.
+# =====================================================================
 set -Eeuo pipefail
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LAB_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$LAB_DIR"
@@ -11,10 +14,30 @@ PROJECT_NAME="visons-demo-inicio"
 if [[ -f .env ]]; then source .env; fi
 export HTTP_PORT="${HTTP_PORT:-8080}"
 
-paso() { printf '\n\033[1;36m[%s]\033[0m %s\n' "$1" "$2"; }
-porqué() { printf '    Por qué: %s\n' "$1"; }
-ok() { printf '    \033[1;32m✓ %s\033[0m\n' "$1"; }
+paso()    { printf '\n\033[1;36m[%s]\033[0m %s\n' "$1" "$2"; }
+porqué()  { printf '    Por qué: %s\n' "$1"; }
+ok()      { printf '    \033[1;32m✓ %s\033[0m\n' "$1"; }
 comando() { printf '    \033[1;33m$ %s\033[0m\n' "$1"; }
+
+on_error() {
+  local exit_code="$?"
+  local line_no="$1"
+  local failed_cmd="$2"
+
+  printf '\n\033[1;31m══════════════════════════════════════════════════════════════════════\033[0m\n'
+  printf '\033[1;31m  [ERROR DETECTADO] Falló la evolución en demo-evolucion.sh\033[0m\n'
+  printf '\033[1;31m══════════════════════════════════════════════════════════════════════\033[0m\n'
+  printf '  → \033[1;33mLínea del script:\033[0m %s\n' "$line_no"
+  printf '  → \033[1;33mComando fallido:\033[0m  %s\n' "$failed_cmd"
+  printf '  → \033[1;33mCódigo de salida:\033[0m %s\n\n' "$exit_code"
+  printf '\033[1;36m🔍 Sugerencias:\033[0m\n'
+  printf '  • Asegúrate de que demo-inicio.sh se ejecutó primero.\n'
+  printf '  • Para ver logs detallados: docker compose --project-name %s -f compose.yaml logs\n' "$PROJECT_NAME"
+  printf '\033[1;31m══════════════════════════════════════════════════════════════════════\033[0m\n\n'
+  exit "$exit_code"
+}
+
+trap 'on_error $LINENO "$BASH_COMMAND"' ERR
 
 paso 1 "Desplegando la nueva versión (V002)"
 porqué "Al reiniciar los contenedores (o redesplegar), los scripts de inicio detectarán que V001 ya existe y solo aplicarán V002."
@@ -22,8 +45,8 @@ porqué "Al reiniciar los contenedores (o redesplegar), los scripts de inicio de
 comando "docker compose --project-name $PROJECT_NAME --env-file .env -f compose.yaml -f compose.build.yaml build"
 docker compose --project-name "$PROJECT_NAME" --env-file .env -f compose.yaml -f compose.build.yaml build
 
-comando "docker compose --project-name $PROJECT_NAME --env-file .env up -d --wait"
-docker compose --project-name "$PROJECT_NAME" --env-file .env up -d --wait
+comando "docker compose --project-name $PROJECT_NAME --env-file .env -f compose.yaml up -d --wait"
+docker compose --project-name "$PROJECT_NAME" --env-file .env -f compose.yaml up -d --wait
 
 sleep 5
 

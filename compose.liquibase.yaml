@@ -1,0 +1,109 @@
+# =====================================================================
+# compose.liquibase.yaml - Versionamiento con Liquibase (SQL Server + MongoDB)
+# VISONS S.A.C. - Persistencia poliglota (27 Entidades de negocio)
+#
+# Levanta bases de datos NUEVAS y vacias, y Liquibase construye el esquema
+# aplicando los changesets de liquibase/sqlserver (11 tablas) y liquibase/mongodb (16 colecciones).
+# Usa el mismo archivo .env del proyecto (SA_PASSWORD / MSSQL_SA_PASSWORD, MONGO_ADMIN_PASSWORD).
+#
+# Uso:  docker compose -f compose.liquibase.yaml up --build
+# =====================================================================
+name: visons-liquibase
+
+services:
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD:-${MSSQL_SA_PASSWORD:-SuperSecretPass123!}}
+      MSSQL_PID: Developer
+    ports:
+      - "127.0.0.1:1433:1433"
+    volumes:
+      - lb-sql-data:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -Q "SELECT 1" > /dev/null 2>&1
+      interval: 10s
+      timeout: 8s
+      retries: 20
+      start_period: 30s
+
+  mongodb:
+    image: docker.io/library/mongo:8.0.32-noble
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ADMIN_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ADMIN_PASSWORD:-adminpassword}
+      GLIBC_TUNABLES: glibc.pthread.rseq=1
+    ports:
+      - "127.0.0.1:27018:27017"
+    volumes:
+      - lb-mongo-data:/data/db
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --host
+        - mongodb
+        - --quiet
+        - --eval
+        - 'const a=db.getSiblingDB("admin"); a.auth(process.env.MONGO_INITDB_ROOT_USERNAME,process.env.MONGO_INITDB_ROOT_PASSWORD); if(a.runCommand({ping:1}).ok!==1) quit(1);'
+      interval: 10s
+      timeout: 8s
+      retries: 20
+      start_period: 20s
+
+  # Crea la base de datos Visons (Liquibase necesita que exista para conectarse)
+  sql-createdb:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    entrypoint: [ "/opt/mssql-tools18/bin/sqlcmd" ]
+    command:
+      - -S
+      - sqlserver
+      - -U
+      - sa
+      - -P
+      - ${SA_PASSWORD:-${MSSQL_SA_PASSWORD:-SuperSecretPass123!}}
+      - -C
+      - -Q
+      - IF DB_ID('Visons') IS NULL CREATE DATABASE Visons
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: "no"
+
+  # Liquibase -> SQL Server (11 tablas transaccionales)
+  liquibase-sqlserver:
+    build: ./liquibase
+    environment:
+      LIQUIBASE_COMMAND_URL: jdbc:sqlserver://sqlserver:1433;databaseName=Visons;encrypt=true;trustServerCertificate=true
+      LIQUIBASE_COMMAND_USERNAME: sa
+      LIQUIBASE_COMMAND_PASSWORD: ${SA_PASSWORD:-${MSSQL_SA_PASSWORD:-SuperSecretPass123!}}
+      LIQUIBASE_COMMAND_CHANGELOG_FILE: changelog/db.changelog-master.yaml
+    volumes:
+      - ./liquibase/sqlserver:/liquibase/changelog:z
+    command: [ "update" ]
+    depends_on:
+      sql-createdb:
+        condition: service_completed_successfully
+    restart: "no"
+
+  # Liquibase -> MongoDB (16 colecciones maestras y de logs)
+  liquibase-mongodb:
+    build: ./liquibase
+    environment:
+      LIQUIBASE_COMMAND_URL: mongodb://${MONGO_ADMIN_USER:-admin}:${MONGO_ADMIN_PASSWORD:-adminpassword}@mongodb:27017/Visons?authSource=admin
+      LIQUIBASE_COMMAND_CHANGELOG_FILE: changelog/db.changelog-master.yaml
+    volumes:
+      - ./liquibase/mongodb:/liquibase/changelog:z
+    command: [ "update" ]
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: "no"
+
+volumes:
+  lb-sql-data:
+  lb-mongo-data:

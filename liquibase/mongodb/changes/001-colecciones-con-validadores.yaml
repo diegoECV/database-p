@@ -1,0 +1,72 @@
+databaseChangeLog:
+  - changeSet:
+      id: m001-categories
+      author: lizeth
+      changes:
+        - runCommand:
+            command: >
+              {
+                create: "categories",
+                validator: { $jsonSchema: {
+                  bsonType: "object",
+                  required: ["name", "is_active"],
+                  properties: {
+                    name:      { bsonType: "string" },
+                    is_active: { bsonType: "bool" }
+                  }
+                }},
+                validationLevel: "moderate",
+                validationAction: "warn"
+              }
+      rollback:
+        - dropCollection:
+            collectionName: categories
+
+  - changeSet:
+      id: m002-products
+      author: lizeth
+      changes:
+        - runCommand:
+            command: >
+              {
+                create: "products",
+                validator: { $jsonSchema: {
+                  bsonType: "object",
+                  required: ["name", "category_id", "is_active"],
+                  properties: {
+                    name:        { bsonType: "string" },
+                    category_id: {},
+                    is_active:   { bsonType: "bool" }
+                  }
+                }},
+                validationLevel: "moderate",
+                validationAction: "warn"
+              }
+      rollback:
+        - dropCollection:
+            collectionName: products
+
+  - changeSet:
+      id: m003-users
+      author: diego
+      changes:
+        - runCommand:
+            command: >
+              {
+                create: "users",
+                validator: { $jsonSchema: {
+                  bsonType: "object",
+                  required: ["username", "role", "isActive"],
+                  properties: {
+                    username: { bsonType: "string" },
+                    email:    { bsonType: "string" },
+                    role:     { enum: ["ADMIN", "MANAGER", "OPERATOR", "ANALYST", "CLIENT", "USER"] },
+                    isActive: { bsonType: "bool" }
+                  }
+                }},
+                validationLevel: "moderate",
+                validationAction: "warn"
+              }
+      rollback:
+        - dropCollection:
+            collectionName: users
